@@ -40,6 +40,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import zipkin.Codec;
 import zipkin.Endpoint;
+import zipkin.SimpleSpan;
 import zipkin.Span;
 
 /**
@@ -152,6 +153,31 @@ public class CodecBenchmarks {
   @Benchmark
   public byte[] writeClientSpan_thrift_libthrift() throws TException {
     return serialize(clientSpanLibThrift);
+  }
+
+  static final byte[] simpleSpanJson = read("/span-simple.json");
+  static final SimpleSpan simpleSpan = SimpleSpan.fromJson(simpleSpanJson);
+  static final List<SimpleSpan> tenSimpleSpans = Collections.nCopies(10, simpleSpan);
+  static final byte[] tenSimpleSpansJson = SimpleSpan.toJson(tenSimpleSpans);
+
+  @Benchmark
+  public SimpleSpan readClientSpan_json_zipkin_simple() {
+    return SimpleSpan.fromJson(simpleSpanJson);
+  }
+
+  @Benchmark
+  public List<SimpleSpan> readTenClientSpans_json_zipkin_simple() {
+    return SimpleSpan.fromJsonList(tenSimpleSpansJson);
+  }
+
+  @Benchmark
+  public byte[] writeClientSpan_json_zipkin_simple() {
+    return simpleSpan.toJson();
+  }
+
+  @Benchmark
+  public byte[] writeTenClientSpans_json_zipkin_simple() {
+    return SimpleSpan.toJson(tenSimpleSpans);
   }
 
   static final byte[] rpcSpanJson = read("/span-rpc.json");
